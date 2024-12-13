@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -15,15 +16,15 @@ func main() {
 	args := os.Args
 	switch args[1] {
 	case "add":
-		add_task(args[1:])
+		add_task(args[2:])
 	case "show":
 		show_tasks(args[1:])
 	case "end":
-		end_task(args[1:])
+		end_task(args[2])
 	}
 }
 
-func end_task(args []string) {
+func end_task(id string) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Error finding home directory:", err)
@@ -33,11 +34,7 @@ func end_task(args []string) {
 	// Define the global file path
 	filePath := filepath.Join(homeDir, ".tasks", "tasks.csv")
 
-	flags := flag.NewFlagSet("end", flag.ExitOnError)
-
-	rowToDelete := flags.Int("id", 0, "search task by id")
-
-	err = flags.Parse(args[1:])
+	rowToDelete, err := strconv.Atoi(id)
 
 	if err != nil {
 		panic(err)
@@ -63,7 +60,7 @@ func end_task(args []string) {
 		if err != nil {
 			panic(err)
 		}
-		if current_id == *rowToDelete {
+		if current_id == rowToDelete {
 			updatedRecords = [][]string{{"id", "name"}}
 			updatedRecords = append(updatedRecords, records[:i]...)
 			updatedRecords = append(updatedRecords, records[i+1:]...)
@@ -156,18 +153,10 @@ func add_task(args []string) {
 		return
 	}
 
+	name := strings.Join(args, " ")
+
 	// Define the global file path
 	filePath := filepath.Join(homeDir, ".tasks", "tasks.csv")
-
-	flags := flag.NewFlagSet("add", flag.ExitOnError)
-
-	name := flags.String("name", "example task", "add new task")
-
-	err = flags.Parse(args[1:])
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
 
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
@@ -186,7 +175,7 @@ func add_task(args []string) {
 	last_id, err = strconv.Atoi(rows[len(rows)-1][0])
 
 	new_id := last_id + 1
-	data := []string{strconv.Itoa(new_id), *name}
+	data := []string{strconv.Itoa(new_id), name}
 
 	fmt.Println("Adding task:", data)
 

@@ -47,15 +47,22 @@ func end_task(args []string) {
 		panic(err)
 	}
 
-	// Check if the rowToDelete is valid
-	if *rowToDelete < 0 || *rowToDelete >= len(records) {
-		panic("wrong id")
-	}
-
 	records = records[1:]
+	fmt.Println(records)
+	updatedRecords := records
 
-	// Remove the specific row
-	updatedRecords := append(records[:*rowToDelete], records[*rowToDelete+1:]...)
+	for i, row := range records {
+		current_id, err := strconv.Atoi(row[0])
+		if err != nil {
+			panic(err)
+		}
+		if current_id == *rowToDelete {
+			updatedRecords = [][]string{{"id", "name"}}               // Add the header
+			updatedRecords = append(updatedRecords, records[:i]...)   // Add rows before the one to delete
+			updatedRecords = append(updatedRecords, records[i+1:]...) // Add rows after the one to delete
+
+		}
+	}
 
 	// Reopen the file for writing (truncate and overwrite)
 	file, err = os.OpenFile("tasks.csv", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)

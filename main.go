@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
@@ -23,24 +24,31 @@ func main() {
 }
 
 func end_task(args []string) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error finding home directory:", err)
+		return
+	}
+
+	// Define the global file path
+	filePath := filepath.Join(homeDir, ".tasks", "tasks.csv")
+
 	flags := flag.NewFlagSet("end", flag.ExitOnError)
 
 	rowToDelete := flags.Int("id", 0, "search task by id")
 
-	err := flags.Parse(args[1:])
+	err = flags.Parse(args[1:])
 
 	if err != nil {
 		panic(err)
 	}
 
-	// Open the file for reading
-	file, err := os.Open("tasks.csv")
+	file, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	// Read the CSV data
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
@@ -48,7 +56,6 @@ func end_task(args []string) {
 	}
 
 	records = records[1:]
-	fmt.Println(records)
 	updatedRecords := records
 
 	for i, row := range records {
@@ -57,40 +64,48 @@ func end_task(args []string) {
 			panic(err)
 		}
 		if current_id == *rowToDelete {
-			updatedRecords = [][]string{{"id", "name"}}               // Add the header
-			updatedRecords = append(updatedRecords, records[:i]...)   // Add rows before the one to delete
-			updatedRecords = append(updatedRecords, records[i+1:]...) // Add rows after the one to delete
+			updatedRecords = [][]string{{"id", "name"}}
+			updatedRecords = append(updatedRecords, records[:i]...)
+			updatedRecords = append(updatedRecords, records[i+1:]...)
 
 		}
 	}
 
-	// Reopen the file for writing (truncate and overwrite)
-	file, err = os.OpenFile("tasks.csv", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	// Write the updated records back to the file
 	writer := csv.NewWriter(file)
 	err = writer.WriteAll(updatedRecords)
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func show_tasks(args []string) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error finding home directory:", err)
+		return
+	}
+
+	// Define the global file path
+	filePath := filepath.Join(homeDir, ".tasks", "tasks.csv")
+
 	flags := flag.NewFlagSet("show", flag.ExitOnError)
 
 	id := flags.Int("id", 0, "search task by id")
 
-	err := flags.Parse(args[1:])
+	err = flags.Parse(args[1:])
 
 	if err != nil {
 		panic(err)
 	}
 
-	file, err := os.Open("tasks.csv")
+	file, err := os.Open(filePath)
 
 	if err != nil {
 		panic(err)
@@ -135,17 +150,26 @@ func show_tasks(args []string) {
 }
 
 func add_task(args []string) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error finding home directory:", err)
+		return
+	}
+
+	// Define the global file path
+	filePath := filepath.Join(homeDir, ".tasks", "tasks.csv")
+
 	flags := flag.NewFlagSet("add", flag.ExitOnError)
 
 	name := flags.String("name", "example task", "add new task")
 
-	err := flags.Parse(args[1:])
+	err = flags.Parse(args[1:])
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 
-	file, err := os.OpenFile("tasks.csv", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}

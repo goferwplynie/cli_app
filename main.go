@@ -14,13 +14,40 @@ import (
 
 func main() {
 	args := os.Args
-	switch args[1] {
-	case "add":
-		add_task(args[2:])
-	case "show":
-		show_tasks(args[1:])
-	case "end":
-		end_task(args[2])
+	if len(args) > 1 {
+		switch args[1] {
+		case "add":
+			add_task(args[2:])
+		case "show":
+			show_tasks(args[1:])
+		case "end":
+			end_task(args[2])
+		}
+	} else {
+		setup()
+	}
+}
+
+func setup() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error finding home directory:", err)
+		return
+	}
+
+	os.Mkdir(homeDir+"/.tasks", 0755)
+	os.Create(homeDir + "/.tasks/tasks.csv")
+
+	file, err := os.OpenFile(homeDir+"/.tasks/tasks.csv", os.O_RDWR, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	err = writer.WriteAll([][]string{{"id", "name"}})
+	if err != nil {
+		panic(err)
 	}
 }
 

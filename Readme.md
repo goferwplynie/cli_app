@@ -10,4 +10,4 @@ cli task app written in go. Data is stored in csv file
 
 `go run main.go show --id=1` - search task by id
 
-`go run main.go end --id=1` - mark task as completed and delete csv file
+`go run main.go end id` - mark task as completed and delete csv record

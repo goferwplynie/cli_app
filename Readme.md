@@ -5,6 +5,7 @@ cli task app written in go. Data is stored in csv file
 ## instalation
 
 - **Linux**:
+  
   clone the repository
   
   ```

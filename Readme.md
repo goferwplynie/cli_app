@@ -32,6 +32,7 @@ just run `tasks` command in terminal
 ```tasks show --id=id``` - show task on specified id
 
 ```tasks add task name``` - add task (suports spaces)
+
 ```tasks end id``` - end task with specified id
 
 

@@ -36,19 +36,27 @@ func setup() {
 	}
 
 	os.Mkdir(homeDir+"/.tasks", 0755)
+
+	fmt.Println("created tasks directory")
+
 	os.Create(homeDir + "/.tasks/tasks.csv")
+
+	fmt.Println("added tasks.csv")
 
 	file, err := os.OpenFile(homeDir+"/.tasks/tasks.csv", os.O_RDWR, 0644)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error opening a file ", err)
+		return
 	}
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
 	err = writer.WriteAll([][]string{{"id", "name"}})
 	if err != nil {
-		panic(err)
+		fmt.Println("Error writing to file ", err)
+		return
 	}
+	fmt.Println("finished setup. app ready to use!")
 }
 
 func end_task(id string) {
@@ -64,19 +72,22 @@ func end_task(id string) {
 	rowToDelete, err := strconv.Atoi(id)
 
 	if err != nil {
-		panic(err)
+		fmt.Println("Error while converting to int", err)
+		return
 	}
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error opening a file", err)
+		return
 	}
 	defer file.Close()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		panic(err)
+		fmt.Println("Error reading a file", err)
+		return
 	}
 
 	records = records[1:]
@@ -85,7 +96,8 @@ func end_task(id string) {
 	for i, row := range records {
 		current_id, err := strconv.Atoi(row[0])
 		if err != nil {
-			panic(err)
+			fmt.Println("Error while converting to int", err)
+			return
 		}
 		if current_id == rowToDelete {
 			updatedRecords = [][]string{{"id", "name"}}
@@ -97,14 +109,16 @@ func end_task(id string) {
 
 	file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error opening file ", err)
+		return
 	}
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
 	err = writer.WriteAll(updatedRecords)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error writing to file ", err)
+		return
 	}
 
 }
